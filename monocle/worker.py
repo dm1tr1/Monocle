@@ -788,9 +788,9 @@ class Worker:
                                                 player_longitude=longitude,
                                                 gym_latitude=fort['latitude'],
                                                 gym_longitude=fort['longitude']
-                                            )
-                        responses = await self.call(request)
-                        result = responses.get('GET_GYM_DETAILS', {}).get('status', 0)
+                                                )
+                        responses = await self.call(request,settings=True,action=2.4)
+                        result = responses.get('GET_GYM_DETAILS', {}).get('result', 0)
                         if result == 1:
                             self.log.debug('Getting gym detail #{}', fort['id'])
                             try:
@@ -803,7 +803,7 @@ class Worker:
                                     rowDetail['id'] = fort['id']
                                     rowDetail['player_name'] = member['trainer_public_profile']['name']
                                     rowDetail['player_level'] = member['trainer_public_profile']['level']
-                                    rowDetail['player_team'] = gym_state['fort_data']['owned_by_team'],
+                                    rowDetail['player_team'] = gym_state['fort_data']['owned_by_team']
                                     rowDetail['pokemon_id'] = member['pokemon_data']['pokemon_id']
                                     rowDetail['pokemon_cp'] = member['pokemon_data']['cp']
                                     rowDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
@@ -812,7 +812,7 @@ class Worker:
                                     DB_PROC.add(self.normalize_gym_pokemon(member))
                                     DB_PROC.add(self.normalize_gym_player(rowDetail))
                             except KeyError:
-                                self.log.error('Missing Gym Detail Response.')
+                                self.log.debug('Missing Gym Detail Response #{}', fort['id'])
                         else:
                             self.log.debug('Failed getting gym detail #{}', fort['id'])
 
@@ -1240,6 +1240,7 @@ class Worker:
         return {
             'type': 'fort',
             'external_id': raw['id'],
+            'name': raw.get('name', ''),
             'lat': raw['latitude'],
             'lon': raw['longitude'],
             'team': raw.get('owned_by_team', 0),
@@ -1264,7 +1265,7 @@ class Worker:
     def normalize_gym_pokemon(raw):
         return {
             'type': 'fort_pokemon',
-            'pokemon_uid': raw['pokemon_data']['id'],
+            'pokemon_uid': str(raw['pokemon_data']['id']),
             'pokemon_id': raw['pokemon_data']['pokemon_id'],
             'cp': raw['pokemon_data']['cp'],
             'player_name': raw['trainer_public_profile']['name'],
@@ -1287,6 +1288,7 @@ class Worker:
             'last_seen': raw['last_modified_timestamp_ms'] // 1000
         }
 
+    @staticmethod
     def normalize_gym_player(raw):
         return {
             'type': 'fort_player',
