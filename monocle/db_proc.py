@@ -41,6 +41,12 @@ class DatabaseProcessor(Thread):
                     self.count += 1
                 elif item_type == 'fort':
                     db.add_fort_sighting(session, item)
+                elif item['type'] == 'fort_detail':
+                    db.add_fort_detail_sighting(session, item)
+                elif item['type'] == 'fort_pokemon':
+                    db.add_fort_pokemon_sighting(session, item)
+                elif item['type'] == 'fort_player':
+                    db.add_fort_player_sighting(session, item)
                 elif item_type == 'pokestop':
                     db.add_pokestop(session, item)
                 elif item_type == 'mystery-update':

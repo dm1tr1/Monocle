@@ -11,7 +11,7 @@ from aiopogo.auth_ptc import AuthPtc
 from aiopogo.hash_server import HashServer
 from pogeo import get_distance
 
-from .db import SIGHTING_CACHE, MYSTERY_CACHE, Bounds
+from .db import SIGHTING_CACHE, MYSTERY_CACHE, FORT_CACHE, Bounds
 from .utils import round_coords, load_pickle, get_device_info, get_spawn_id, get_start_coords, Units, randomize_point
 from .shared import get_logger, LOOP, SessionManager, run_threaded, ACCOUNTS
 from .spawns import SPAWNS
@@ -780,7 +780,41 @@ class Worker:
                         if not cooldown or time() > cooldown / 1000:
                             spinning = LOOP.create_task(self.spin_pokestop(pokestop))
                 else:
-                    DB_PROC.add(self.normalize_gym(fort))
+                    if not self.normalize_gym(fort) in FORT_CACHE:
+                        # Let's make the API Call
+                        request = self.api.create_request()
+                        request.get_gym_details(gym_id=fort['id'],
+                                                player_latitude=latitude,
+                                                player_longitude=longitude,
+                                                gym_latitude=fort['latitude'],
+                                                gym_longitude=fort['longitude']
+                                            )
+                        responses = await self.call(request)
+                        result = responses.get('GET_GYM_DETAILS', {}).get('status', 0)
+                        if result == 1:
+                            self.log.debug('Getting gym detail #{}', fort['id'])
+                            try:
+                                get_gym_details = responses['GET_GYM_DETAILS']
+                                gym_state = get_gym_details['gym_state']
+                                fort['name'] = get_gym_details['name']
+                                DB_PROC.add(self.normalize_gym(fort))
+                                for member in get_gym_details['gym_state']['memberships']:
+                                    rowDetail = {}
+                                    rowDetail['id'] = fort['id']
+                                    rowDetail['player_name'] = member['trainer_public_profile']['name']
+                                    rowDetail['player_level'] = member['trainer_public_profile']['level']
+                                    rowDetail['player_team'] = gym_state['fort_data']['owned_by_team'],
+                                    rowDetail['pokemon_id'] = member['pokemon_data']['pokemon_id']
+                                    rowDetail['pokemon_cp'] = member['pokemon_data']['cp']
+                                    rowDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
+                                    member['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
+                                    shared.DB.add(self.normalize_gym_detail(rowDetail))
+                                    shared.DB.add(self.normalize_gym_pokemon(member))
+                                    shared.DB.add(self.normalize_gym_player(rowDetail))
+                            except KeyError:
+                                self.log.error('Missing Gym Detail Response.')
+                        else:
+                            self.log.debug('Failed getting gym detail #{}', fort['id'])
 
             if conf.MORE_POINTS or bootstrap:
                 for point in map_cell.get('spawn_points', []):
@@ -1212,6 +1246,54 @@ class Worker:
             'prestige': raw.get('gym_points', 0),
             'guard_pokemon_id': raw.get('guard_pokemon_id', 0),
             'last_modified': raw['last_modified_timestamp_ms'] // 1000,
+        }
+
+    @staticmethod
+    def normalize_gym_detail(raw):
+        return {
+            'type': 'fort_detail',
+            'external_id': raw['id'],
+            'player_name': raw['player_name'],
+            'player_level': raw['player_level'],
+            'pokemon_id': raw['pokemon_id'],
+            'pokemon_cp': raw['pokemon_cp'],
+            'last_modified': raw['last_modified_timestamp_ms'] // 1000,
+        }
+
+    @staticmethod
+    def normalize_gym_pokemon(raw):
+        return {
+            'type': 'fort_pokemon',
+            'pokemon_uid': raw['pokemon_data']['id'],
+            'pokemon_id': raw['pokemon_data']['pokemon_id'],
+            'cp': raw['pokemon_data']['cp'],
+            'player_name': raw['trainer_public_profile']['name'],
+            'upgrades': raw['pokemon_data'].get('num_upgrades', 0),
+            'move_1': raw['pokemon_data'].get('move_1'),
+            'move_2': raw['pokemon_data'].get('move_2'),
+            'height': raw['pokemon_data'].get('height_m'),
+            'weight': raw['pokemon_data'].get('weight_kg'),
+            'stamina': raw['pokemon_data'].get('stamina'),
+            'stamina_max': raw['pokemon_data'].get('stamina_max'),
+            'cp_multiplier': raw['pokemon_data'].get('cp_multiplier'),
+            'additional_cp_multiplier': raw['pokemon_data'].get(
+                'additional_cp_multiplier', 0),
+            'iv_defense': raw['pokemon_data'].get(
+                'individual_defense', 0),
+            'iv_stamina': raw['pokemon_data'].get(
+                'individual_stamina', 0),
+            'iv_attack':  raw['pokemon_data'].get(
+                'individual_attack', 0),
+            'last_seen': raw['last_modified_timestamp_ms'] // 1000
+        }
+
+    def normalize_gym_player(raw):
+        return {
+            'type': 'fort_player',
+            'name': raw['player_name'],
+            'team': raw['player_team'],
+            'level': raw['player_level'],
+            'last_seen': raw['last_modified_timestamp_ms'] // 1000
         }
 
     @staticmethod
