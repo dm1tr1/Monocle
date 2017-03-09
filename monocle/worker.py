@@ -808,9 +808,9 @@ class Worker:
                                     rowDetail['pokemon_cp'] = member['pokemon_data']['cp']
                                     rowDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
                                     member['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
-                                    shared.DB.add(self.normalize_gym_detail(rowDetail))
-                                    shared.DB.add(self.normalize_gym_pokemon(member))
-                                    shared.DB.add(self.normalize_gym_player(rowDetail))
+                                    DB_PROC.add(self.normalize_gym_detail(rowDetail))
+                                    DB_PROC.add(self.normalize_gym_pokemon(member))
+                                    DB_PROC.add(self.normalize_gym_player(rowDetail))
                             except KeyError:
                                 self.log.error('Missing Gym Detail Response.')
                         else:
