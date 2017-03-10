@@ -176,7 +176,19 @@ function FortMarker (raw) {
         if (raw.team === 0) {
             event.popup.setContent('An empty Gym!');
         } else {
-            event.popup.setContent('Prestige: <b>' + raw.prestige + '</b><br>Guarding Pokemon:<br><b>' + '#' + raw.pokemon_id + ' ' + raw.pokemon_name + '</b>');
+            event.popup.setContent('<b>' + raw.name +'</b><br>Prestige: <b>' + raw.prestige + '</b><br>Guarding Pokemon:<br><b>' + '#' + raw.pokemon_id + ' ' + raw.pokemon_name + '</b><br>');
+            var fort_id = marker.raw.id.split('-')[1];
+            new Promise(function (resolve, reject) {
+                $.get('/gym_details?fort_id='+fort_id, function (response) {
+                    resolve(response);
+                });
+            }).then(function (data) {
+                var pokemons = $('<div class="gym-pokemons"></div>');
+                data.forEach(function(el) {
+                    pokemons.append('<div class="gym-pokemon"><img src="/static/monocle-icons/icons/' + el.pokemon_id + '.png" class="img-responsive"><b>CP: </b>' + el.pokemon_cp +'<br><b>' + el.player_name +'</b> (' + el.player_level + ')</div>');
+                });
+                event.popup.setContent('<b>' + raw.name +'</b><br>Prestige: <b>' + raw.prestige + '</b><br>Guarding Pokemon:<br><b>' + '#' + raw.pokemon_id + ' ' + raw.pokemon_name + '</b><br>'+pokemons[0].outerHTML);
+            });
         }
     });
     marker.bindPopup();

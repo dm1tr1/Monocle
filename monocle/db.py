@@ -640,7 +640,7 @@ def add_fort_sighting(session, raw_fort):
 def add_fort_detail_sighting(session, raw_fort_detail):
     if raw_fort_detail in FORT_DETAIL_CACHE:
         return
-
+    
     existing = session.query(exists().where(and_(
         FortDetail.external_id == raw_fort_detail['external_id'],
         FortDetail.last_modified == raw_fort_detail['last_modified'],
@@ -791,6 +791,25 @@ def get_forts(session):
     '''.format(where=where))
     return query.fetchall()
 
+def get_fort_pokemon(session, fort_id):
+    query = session.execute('''
+        SELECT
+            fd.player_name,
+            fd.player_level,
+            fd.pokemon_id,
+            fd.pokemon_cp
+        FROM fort_detail fd
+        JOIN forts on forts.external_id = fd.external_id
+        WHERE forts.id = {fort_id}
+        AND (fd.external_id, fd.last_modified) IN (
+            SELECT external_id, MAX(last_modified)
+            FROM fort_detail
+            WHERE external_id = forts.external_id
+            GROUP BY external_id
+        )
+        ORDER BY pokemon_cp ASC
+    '''.format(fort_id=fort_id))
+    return query.fetchall()
 
 def get_session_stats(session):
     query = session.query(func.min(Sighting.expire_timestamp),

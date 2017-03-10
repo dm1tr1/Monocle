@@ -91,6 +91,10 @@ async def pokemon_data(request):
 async def gym_data(request):
     return json(await get_gyms_async())
 
+@app.route('/gym_details')
+async def gym_details(request):
+    fort_id = request.args.get('fort_id', 0)
+    return jsonify(get_gym_details_async(fort_id))
 
 @app.route('/spawnpoints')
 async def get_spawn_points(request):
