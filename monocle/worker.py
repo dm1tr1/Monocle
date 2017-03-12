@@ -809,8 +809,8 @@ class Worker:
                                     rowDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
                                     member['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
                                     DB_PROC.add(self.normalize_gym_detail(rowDetail))
-                                    DB_PROC.add(self.normalize_gym_pokemon(member))
-                                    DB_PROC.add(self.normalize_gym_player(rowDetail))
+                                    #DB_PROC.add(self.normalize_gym_pokemon(member))
+                                    #DB_PROC.add(self.normalize_gym_player(rowDetail))
                             except KeyError:
                                 self.log.debug('Missing Gym Detail Response #{}', fort['id'])
                         else:
