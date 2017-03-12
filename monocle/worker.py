@@ -975,6 +975,9 @@ class Worker:
             pokemon['individual_attack'] = pdata.get('individual_attack', 0)
             pokemon['individual_defense'] = pdata.get('individual_defense', 0)
             pokemon['individual_stamina'] = pdata.get('individual_stamina', 0)
+            pokemon['height'] = pdata['height_m']
+            pokemon['weight'] = pdata['weight_kg']
+            pokemon['gender'] = pdata['pokemon_display']['gender']
         except KeyError:
             self.log.error('Missing Pokemon data in encounter response.')
         self.error_code = '!'
@@ -1261,42 +1264,42 @@ class Worker:
             'last_modified': raw['last_modified_timestamp_ms'] // 1000,
         }
 
-    @staticmethod
-    def normalize_gym_pokemon(raw):
-        return {
-            'type': 'fort_pokemon',
-            'pokemon_uid': str(raw['pokemon_data']['id']),
-            'pokemon_id': raw['pokemon_data']['pokemon_id'],
-            'cp': raw['pokemon_data']['cp'],
-            'player_name': raw['trainer_public_profile']['name'],
-            'upgrades': raw['pokemon_data'].get('num_upgrades', 0),
-            'move_1': raw['pokemon_data'].get('move_1'),
-            'move_2': raw['pokemon_data'].get('move_2'),
-            'height': raw['pokemon_data'].get('height_m'),
-            'weight': raw['pokemon_data'].get('weight_kg'),
-            'stamina': raw['pokemon_data'].get('stamina'),
-            'stamina_max': raw['pokemon_data'].get('stamina_max'),
-            'cp_multiplier': raw['pokemon_data'].get('cp_multiplier'),
-            'additional_cp_multiplier': raw['pokemon_data'].get(
-                'additional_cp_multiplier', 0),
-            'iv_defense': raw['pokemon_data'].get(
-                'individual_defense', 0),
-            'iv_stamina': raw['pokemon_data'].get(
-                'individual_stamina', 0),
-            'iv_attack':  raw['pokemon_data'].get(
-                'individual_attack', 0),
-            'last_seen': raw['last_modified_timestamp_ms'] // 1000
-        }
+    # @staticmethod
+    # def normalize_gym_pokemon(raw):
+    #     return {
+    #         'type': 'fort_pokemon',
+    #         'pokemon_uid': str(raw['pokemon_data']['id']),
+    #         'pokemon_id': raw['pokemon_data']['pokemon_id'],
+    #         'cp': raw['pokemon_data']['cp'],
+    #         'player_name': raw['trainer_public_profile']['name'],
+    #         'upgrades': raw['pokemon_data'].get('num_upgrades', 0),
+    #         'move_1': raw['pokemon_data'].get('move_1'),
+    #         'move_2': raw['pokemon_data'].get('move_2'),
+    #         'height': raw['pokemon_data'].get('height_m'),
+    #         'weight': raw['pokemon_data'].get('weight_kg'),
+    #         'stamina': raw['pokemon_data'].get('stamina'),
+    #         'stamina_max': raw['pokemon_data'].get('stamina_max'),
+    #         'cp_multiplier': raw['pokemon_data'].get('cp_multiplier'),
+    #         'additional_cp_multiplier': raw['pokemon_data'].get(
+    #             'additional_cp_multiplier', 0),
+    #         'iv_defense': raw['pokemon_data'].get(
+    #             'individual_defense', 0),
+    #         'iv_stamina': raw['pokemon_data'].get(
+    #             'individual_stamina', 0),
+    #         'iv_attack':  raw['pokemon_data'].get(
+    #             'individual_attack', 0),
+    #         'last_seen': raw['last_modified_timestamp_ms'] // 1000
+    #     }
 
-    @staticmethod
-    def normalize_gym_player(raw):
-        return {
-            'type': 'fort_player',
-            'name': raw['player_name'],
-            'team': raw['player_team'],
-            'level': raw['player_level'],
-            'last_seen': raw['last_modified_timestamp_ms'] // 1000
-        }
+    # @staticmethod
+    # def normalize_gym_player(raw):
+    #     return {
+    #         'type': 'fort_player',
+    #         'name': raw['player_name'],
+    #         'team': raw['player_team'],
+    #         'level': raw['player_level'],
+    #         'last_seen': raw['last_modified_timestamp_ms'] // 1000
+    #     }
 
     @staticmethod
     def normalize_pokestop(raw):

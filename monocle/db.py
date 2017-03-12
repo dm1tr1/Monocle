@@ -258,6 +258,9 @@ class Sighting(Base):
     sta_iv = Column(TINY_TYPE)
     move_1 = Column(SmallInteger)
     move_2 = Column(SmallInteger)
+    height = Column(FLOAT_TYPE)
+    weight = Column(FLOAT_TYPE)
+    gender = Column(TINY_TYPE)
 
     __table_args__ = (
         UniqueConstraint(
@@ -286,6 +289,9 @@ class Mystery(Base):
     sta_iv = Column(TINY_TYPE)
     move_1 = Column(SmallInteger)
     move_2 = Column(SmallInteger)
+    height = Column(FLOAT_TYPE)
+    weight = Column(FLOAT_TYPE)
+    gender = Column(TINY_TYPE)
 
     __table_args__ = (
         UniqueConstraint(
@@ -362,34 +368,34 @@ class FortSighting(Base):
         ),
     )
 
-class FortPokemon(Base):
-    __tablename__ = 'fort_pokemon'
+# class FortPokemon(Base):
+#     __tablename__ = 'fort_pokemon'
 
-    pokemon_uid = Column(String(50), primary_key=True)
-    pokemon_id = Column(Integer)
-    cp = Column(Integer)
-    player_name = Column(String(100), index=True)
-    upgrades = Column(Integer)
-    move_1 = Column(Integer)
-    move_2 = Column(Integer)
-    height = Column(FLOAT_TYPE)
-    weight = Column(FLOAT_TYPE)
-    stamina = Column(Integer)
-    stamina_max = Column(Integer)
-    cp_multiplier = Column(FLOAT_TYPE)
-    additional_cp_multiplier = Column(FLOAT_TYPE)
-    iv_defense = Column(Integer)
-    iv_stamina = Column(Integer)
-    iv_attack = Column(Integer)
-    last_seen = Column(Integer)
+#     pokemon_uid = Column(String(50), primary_key=True)
+#     pokemon_id = Column(Integer)
+#     cp = Column(Integer)
+#     player_name = Column(String(100), index=True)
+#     upgrades = Column(Integer)
+#     move_1 = Column(Integer)
+#     move_2 = Column(Integer)
+#     height = Column(FLOAT_TYPE)
+#     weight = Column(FLOAT_TYPE)
+#     stamina = Column(Integer)
+#     stamina_max = Column(Integer)
+#     cp_multiplier = Column(FLOAT_TYPE)
+#     additional_cp_multiplier = Column(FLOAT_TYPE)
+#     iv_defense = Column(Integer)
+#     iv_stamina = Column(Integer)
+#     iv_attack = Column(Integer)
+#     last_seen = Column(Integer)
 
-class FortPlayer(Base):
-    __tablename__ = 'fort_player'
+# class FortPlayer(Base):
+#     __tablename__ = 'fort_player'
 
-    name = Column(String(50), primary_key=True)
-    team = Column(TINY_TYPE)
-    level = Column(TINY_TYPE)
-    last_seen = Column(Integer)
+#     name = Column(String(50), primary_key=True)
+#     team = Column(TINY_TYPE)
+#     level = Column(TINY_TYPE)
+#     last_seen = Column(Integer)
 
 class Pokestop(Base):
     __tablename__ = 'pokestops'
@@ -489,7 +495,10 @@ def add_sighting(session, pokemon):
         def_iv=pokemon.get('individual_defense'),
         sta_iv=pokemon.get('individual_stamina'),
         move_1=pokemon.get('move_1'),
-        move_2=pokemon.get('move_2')
+        move_2=pokemon.get('move_2'),
+        height=pokemon.get('height'),
+        weight=pokemon.get('weight'),
+        gender=pokemon.get('gender')
     )
     session.add(obj)
     SIGHTING_CACHE.add(pokemon)
@@ -597,7 +606,10 @@ def add_mystery(session, pokemon):
         def_iv=pokemon.get('individual_defense'),
         sta_iv=pokemon.get('individual_stamina'),
         move_1=pokemon.get('move_1'),
-        move_2=pokemon.get('move_2')
+        move_2=pokemon.get('move_2'),
+        height=pokemon.get('height'),
+        weight=pokemon.get('weight'),
+        gender=pokemon.get('gender')
     )
     session.add(obj)
     MYSTERY_CACHE.add(pokemon)
@@ -661,54 +673,54 @@ def add_fort_detail_sighting(session, raw_fort_detail):
     session.add(obj)
     FORT_DETAIL_CACHE.add(raw_fort_detail)
 
-def add_fort_pokemon_sighting(session, raw_fort_pokemon):
-    pokemon = session.query(FortPokemon) \
-        .filter(FortPokemon.pokemon_uid == raw_fort_pokemon['pokemon_uid']) \
-        .first()
-    if not pokemon:
-        pokemon = FortPokemon(
-            pokemon_uid=raw_fort_pokemon['pokemon_uid'],
-            pokemon_id=raw_fort_pokemon['pokemon_id'],
-            cp=raw_fort_pokemon['cp'],
-            player_name=raw_fort_pokemon['player_name'],
-            upgrades=raw_fort_pokemon['upgrades'],
-            move_1=raw_fort_pokemon['move_1'],
-            move_2=raw_fort_pokemon['move_2'],
-            height=raw_fort_pokemon['height'],
-            weight=raw_fort_pokemon['weight'],
-            stamina=raw_fort_pokemon['stamina'],
-            stamina_max=raw_fort_pokemon['stamina_max'],
-            cp_multiplier=raw_fort_pokemon['cp_multiplier'],
-            additional_cp_multiplier=raw_fort_pokemon['additional_cp_multiplier'],
-            iv_defense=raw_fort_pokemon['iv_defense'],
-            iv_stamina=raw_fort_pokemon['iv_stamina'],
-            iv_attack=raw_fort_pokemon['iv_attack'],
-            last_seen=raw_fort_pokemon['last_seen']
-        )
-        session.add(pokemon)
-        return
-    if raw_fort_pokemon['last_seen'] > pokemon.last_seen:
-        pokemon.cp = raw_fort_pokemon['cp']
-        pokemon.stamina = raw_fort_pokemon['stamina']
-        pokemon.last_seen = raw_fort_pokemon['last_seen']
+# def add_fort_pokemon_sighting(session, raw_fort_pokemon):
+#     pokemon = session.query(FortPokemon) \
+#         .filter(FortPokemon.pokemon_uid == raw_fort_pokemon['pokemon_uid']) \
+#         .first()
+#     if not pokemon:
+#         pokemon = FortPokemon(
+#             pokemon_uid=raw_fort_pokemon['pokemon_uid'],
+#             pokemon_id=raw_fort_pokemon['pokemon_id'],
+#             cp=raw_fort_pokemon['cp'],
+#             player_name=raw_fort_pokemon['player_name'],
+#             upgrades=raw_fort_pokemon['upgrades'],
+#             move_1=raw_fort_pokemon['move_1'],
+#             move_2=raw_fort_pokemon['move_2'],
+#             height=raw_fort_pokemon['height'],
+#             weight=raw_fort_pokemon['weight'],
+#             stamina=raw_fort_pokemon['stamina'],
+#             stamina_max=raw_fort_pokemon['stamina_max'],
+#             cp_multiplier=raw_fort_pokemon['cp_multiplier'],
+#             additional_cp_multiplier=raw_fort_pokemon['additional_cp_multiplier'],
+#             iv_defense=raw_fort_pokemon['iv_defense'],
+#             iv_stamina=raw_fort_pokemon['iv_stamina'],
+#             iv_attack=raw_fort_pokemon['iv_attack'],
+#             last_seen=raw_fort_pokemon['last_seen']
+#         )
+#         session.add(pokemon)
+#         return
+#     if raw_fort_pokemon['last_seen'] > pokemon.last_seen:
+#         pokemon.cp = raw_fort_pokemon['cp']
+#         pokemon.stamina = raw_fort_pokemon['stamina']
+#         pokemon.last_seen = raw_fort_pokemon['last_seen']
 
-def add_fort_player_sighting(session, raw_fort_player):
-    player = session.query(FortPlayer) \
-        .filter(FortPlayer.name == raw_fort_player['name']) \
-        .first()
+# def add_fort_player_sighting(session, raw_fort_player):
+#     player = session.query(FortPlayer) \
+#         .filter(FortPlayer.name == raw_fort_player['name']) \
+#         .first()
     
-    if not player:
-        player = FortPlayer(
-            name=raw_fort_player['name'],
-            team=raw_fort_player['team'],
-            level=raw_fort_player['level'],
-            last_seen=raw_fort_player['last_seen']
-        )
-        session.add(player)
-        return
-    if raw_fort_player['level'] > player.level or raw_fort_player['last_seen'] > player.last_seen:
-        player.level = raw_fort_player['level']
-        player.last_seen = raw_fort_player['last_seen']
+#     if not player:
+#         player = FortPlayer(
+#             name=raw_fort_player['name'],
+#             team=raw_fort_player['team'],
+#             level=raw_fort_player['level'],
+#             last_seen=raw_fort_player['last_seen']
+#         )
+#         session.add(player)
+#         return
+#     if raw_fort_player['level'] > player.level or raw_fort_player['last_seen'] > player.last_seen:
+#         player.level = raw_fort_player['level']
+#         player.last_seen = raw_fort_player['last_seen']
 
 def add_pokestop(session, raw_pokestop):
     if raw_pokestop in FORT_CACHE:
