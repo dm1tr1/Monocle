@@ -809,8 +809,6 @@ class Worker:
                                     rowDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
                                     member['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
                                     DB_PROC.add(self.normalize_gym_detail(rowDetail))
-                                    #DB_PROC.add(self.normalize_gym_pokemon(member))
-                                    #DB_PROC.add(self.normalize_gym_player(rowDetail))
                             except KeyError:
                                 self.log.debug('Missing Gym Detail Response #{}', fort['id'])
                         else:
@@ -1263,43 +1261,6 @@ class Worker:
             'pokemon_cp': raw['pokemon_cp'],
             'last_modified': raw['last_modified_timestamp_ms'] // 1000,
         }
-
-    # @staticmethod
-    # def normalize_gym_pokemon(raw):
-    #     return {
-    #         'type': 'fort_pokemon',
-    #         'pokemon_uid': str(raw['pokemon_data']['id']),
-    #         'pokemon_id': raw['pokemon_data']['pokemon_id'],
-    #         'cp': raw['pokemon_data']['cp'],
-    #         'player_name': raw['trainer_public_profile']['name'],
-    #         'upgrades': raw['pokemon_data'].get('num_upgrades', 0),
-    #         'move_1': raw['pokemon_data'].get('move_1'),
-    #         'move_2': raw['pokemon_data'].get('move_2'),
-    #         'height': raw['pokemon_data'].get('height_m'),
-    #         'weight': raw['pokemon_data'].get('weight_kg'),
-    #         'stamina': raw['pokemon_data'].get('stamina'),
-    #         'stamina_max': raw['pokemon_data'].get('stamina_max'),
-    #         'cp_multiplier': raw['pokemon_data'].get('cp_multiplier'),
-    #         'additional_cp_multiplier': raw['pokemon_data'].get(
-    #             'additional_cp_multiplier', 0),
-    #         'iv_defense': raw['pokemon_data'].get(
-    #             'individual_defense', 0),
-    #         'iv_stamina': raw['pokemon_data'].get(
-    #             'individual_stamina', 0),
-    #         'iv_attack':  raw['pokemon_data'].get(
-    #             'individual_attack', 0),
-    #         'last_seen': raw['last_modified_timestamp_ms'] // 1000
-    #     }
-
-    # @staticmethod
-    # def normalize_gym_player(raw):
-    #     return {
-    #         'type': 'fort_player',
-    #         'name': raw['player_name'],
-    #         'team': raw['player_team'],
-    #         'level': raw['player_level'],
-    #         'last_seen': raw['last_modified_timestamp_ms'] // 1000
-    #     }
 
     @staticmethod
     def normalize_pokestop(raw):
