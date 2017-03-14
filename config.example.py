@@ -34,6 +34,10 @@ GIVE_UP_KNOWN = 75   # try to find a worker for a known spawn for this many seco
 GIVE_UP_UNKNOWN = 60 # try to find a worker for an unknown point for this many seconds before giving up
 SKIP_SPAWN = 90      # don't even try to find a worker for a spawn if the spawn time was more than this many seconds ago
 
+# How often should the mystery queue be reloaded (default 90s)
+# this will reduce the grouping of workers around the last few mysteries
+#RESCAN_UNKNOWN = 90
+
 # filename of accounts CSV
 ACCOUNTS_CSV = 'accounts.csv'
 
@@ -166,7 +170,10 @@ REPORT_MAPS = True  # Show maps on reports
 ## Get new accounts from the CAPTCHA queue first if it's not empty
 #FAVOR_CAPTCHA = True
 
-MAP_WORKERS = True  # allow displaying the live location of workers on the map
+# allow displaying the live location of workers on the map
+MAP_WORKERS = True
+# filter these Pokemon from the map to reduce traffic and browser load
+#MAP_FILTER_IDS = [161, 165, 16, 19, 167]
 
 # unix timestamp of last spawn point migration, spawn times learned before this will be ignored
 LAST_MIGRATION = 1481932800  # Dec. 17th, 2016
