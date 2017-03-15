@@ -976,6 +976,8 @@ class Worker:
             pokemon['height'] = pdata['height_m']
             pokemon['weight'] = pdata['weight_kg']
             pokemon['gender'] = pdata['pokemon_display']['gender']
+            if (pokemon['pokemon_id'] == 201 and 'form' in pdata['pokemon_display']):
+                pokemon['form'] = pdata['pokemon_display']['form']
         except KeyError:
             self.log.error('Missing Pokemon data in encounter response.')
         self.error_code = '!'
