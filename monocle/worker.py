@@ -898,6 +898,9 @@ class Worker:
                              longitude = pokestop['lon'])
         responses = await self.call(request, action=1.2)
         name = responses.get('FORT_DETAILS', {}).get('name')
+        pokestop['name'] = name
+        pokestop_name = self.normalize_pokestop_name(pokestop)
+        DB_PROC.add(pokestop_name)
 
         request = self.api.create_request()
         request.fort_search(fort_id = pokestop['external_id'],
@@ -1271,6 +1274,16 @@ class Worker:
             'external_id': raw['id'],
             'lat': raw['latitude'],
             'lon': raw['longitude']
+        }
+
+    @staticmethod
+    def normalize_pokestop_name(raw):
+        return {
+            'type': 'pokestop-update',
+            'external_id': raw['id'],
+            'lat': raw['latitude'],
+            'lon': raw['longitude'],
+            'name': raw.get('name', '')
         }
 
     @staticmethod

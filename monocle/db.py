@@ -5,7 +5,7 @@ from contextlib import contextmanager
 import enum
 import time
 
-from sqlalchemy import Column, Integer, String, Float, SmallInteger, BigInteger, ForeignKey, UniqueConstraint, create_engine, cast, func, desc, asc, and_, exists
+from sqlalchemy import Column, Integer, String, Float, SmallInteger, BigInteger, ForeignKey, UniqueConstraint, create_engine, cast, func, desc, asc, and_, exists, or_
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.types import TypeDecorator, Numeric, Text
 from sqlalchemy.dialects.mysql import TINYINT, MEDIUMINT, BIGINT, DOUBLE
@@ -356,11 +356,11 @@ class FortSighting(Base):
 
     id = Column(Integer, primary_key=True)
     fort_id = Column(Integer, ForeignKey('forts.id'))
-    name = Column(TINY_TYPE)
     last_modified = Column(Integer, index=True)
     team = Column(TINY_TYPE)
     prestige = Column(MEDIUM_TYPE)
     guard_pokemon_id = Column(TINY_TYPE)
+    name = Column(String(100))
 
     __table_args__ = (
         UniqueConstraint(
@@ -377,6 +377,7 @@ class Pokestop(Base):
     external_id = Column(String(35), unique=True)
     lat = Column(FLOAT_TYPE, index=True)
     lon = Column(FLOAT_TYPE, index=True)
+    name = Column(String(100))
 
 
 Session = sessionmaker(bind=get_engine())
@@ -665,6 +666,14 @@ def add_pokestop(session, raw_pokestop):
     session.add(pokestop)
     FORT_CACHE.add(raw_pokestop)
 
+def update_pokestop(session, pokestop):
+    stop = session.query(Pokestop) \
+                .filter(Pokestop.external_id == pokestop['external_id']) \
+                .filter(or_(Pokestop.name == '', Pokestop.name == None)) \
+                .first()
+    if not stop:
+        return
+    stop.name = pokestop['name']
 
 def update_mystery(session, mystery):
     encounter = session.query(Mystery) \
