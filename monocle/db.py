@@ -341,6 +341,7 @@ class FortDetail(Base):
     pokemon_id = Column(Integer)
     pokemon_cp = Column(Integer)
     last_modified = Column(Integer, index=True)
+    iv = Column(TINY_TYPE)
 
     __table_args__ = (
         UniqueConstraint(
@@ -645,6 +646,7 @@ def add_fort_detail_sighting(session, raw_fort_detail):
         pokemon_id=raw_fort_detail['pokemon_id'],
         pokemon_cp=raw_fort_detail['pokemon_cp'],
         last_modified=raw_fort_detail['last_modified'],
+        iv=raw_fort_detail['iv']
     )
     session.add(obj)
     FORT_DETAIL_CACHE.add(raw_fort_detail)

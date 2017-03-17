@@ -799,16 +799,19 @@ class Worker:
                                 fort['name'] = get_gym_details['name']
                                 DB_PROC.add(self.normalize_gym(fort))
                                 for member in get_gym_details['gym_state']['memberships']:
-                                    rowDetail = {}
-                                    rowDetail['id'] = fort['id']
-                                    rowDetail['player_name'] = member['trainer_public_profile']['name']
-                                    rowDetail['player_level'] = member['trainer_public_profile']['level']
-                                    rowDetail['player_team'] = gym_state['fort_data']['owned_by_team']
-                                    rowDetail['pokemon_id'] = member['pokemon_data']['pokemon_id']
-                                    rowDetail['pokemon_cp'] = member['pokemon_data']['cp']
-                                    rowDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
-                                    member['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
-                                    DB_PROC.add(self.normalize_gym_detail(rowDetail))
+                                    gymDetail = {}
+                                    gymDetail['id'] = fort['id']
+                                    gymDetail['player_name'] = member['trainer_public_profile']['name']
+                                    gymDetail['player_level'] = member['trainer_public_profile']['level']
+                                    gymDetail['player_team'] = gym_state['fort_data']['owned_by_team']
+                                    gymDetail['pokemon_id'] = member['pokemon_data']['pokemon_id']
+                                    gymDetail['pokemon_cp'] = member['pokemon_data']['cp']
+                                    gymDetail['last_modified_timestamp_ms'] = fort['last_modified_timestamp_ms']
+                                    attack = member['pokemon_data'].get('individual_attack', 0)
+                                    defense = member['pokemon_data'].get('individual_defense', 0)
+                                    stamina = member['pokemon_data'].get('individual_stamina', 0)
+                                    gymDetail['iv'] = int(100.0 * (attack + defense + stamina) / 45)
+                                    DB_PROC.add(self.normalize_gym_detail(gymDetail))
                             except KeyError:
                                 self.log.debug('Missing Gym Detail Response #{}', fort['id'])
                         else:
@@ -1252,7 +1255,7 @@ class Worker:
             'team': raw.get('owned_by_team', 0),
             'prestige': raw.get('gym_points', 0),
             'guard_pokemon_id': raw.get('guard_pokemon_id', 0),
-            'last_modified': raw['last_modified_timestamp_ms'] // 1000,
+            'last_modified': raw['last_modified_timestamp_ms'] // 1000
         }
 
     @staticmethod
@@ -1265,6 +1268,7 @@ class Worker:
             'pokemon_id': raw['pokemon_id'],
             'pokemon_cp': raw['pokemon_cp'],
             'last_modified': raw['last_modified_timestamp_ms'] // 1000,
+            'iv': raw.get('iv', 0)
         }
 
     @staticmethod
