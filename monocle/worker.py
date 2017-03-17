@@ -1280,9 +1280,9 @@ class Worker:
     def normalize_pokestop_name(raw):
         return {
             'type': 'pokestop-update',
-            'external_id': raw['id'],
-            'lat': raw['latitude'],
-            'lon': raw['longitude'],
+            'external_id': raw['external_id'],
+            'lat': raw['lat'],
+            'lon': raw['lon'],
             'name': raw.get('name', '')
         }
 
