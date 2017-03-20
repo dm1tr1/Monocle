@@ -185,7 +185,7 @@ class FortCache:
     def pickle(self):
         utils.dump_pickle('forts', self.store)
 
-class FortDetailCache(object):
+class FortDetailCache:
     """Simple cache for storing fort details sightings"""
     def __init__(self):
         self.store = utils.load_pickle('forts_detail') or {}
