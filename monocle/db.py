@@ -229,6 +229,7 @@ class Sighting(Base):
     weight = Column(FLOAT_TYPE)
     gender = Column(TINY_TYPE)
     form = Column(TINY_TYPE)
+    shiny = Column(TINY_TYPE)
 
     __table_args__ = (
         UniqueConstraint(
@@ -261,6 +262,7 @@ class Mystery(Base):
     weight = Column(FLOAT_TYPE)
     gender = Column(TINY_TYPE)
     form = Column(TINY_TYPE)
+    shiny = Column(TINY_TYPE)
 
     __table_args__ = (
         UniqueConstraint(
