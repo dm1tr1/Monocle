@@ -433,12 +433,15 @@ def add_spawnpoint(session, pokemon):
     if existing:
         existing.updated = now
 
-        if (existing.despawn_time is None or
-                existing.updated < conf.LAST_MIGRATION):
-            widest = get_widest_range(session, spawn_id)
-            if widest and widest > 1710:
-                existing.duration = 60
-        elif new_time == existing.despawn_time:
+        # if (existing.despawn_time is None or
+        #         existing.updated < conf.LAST_MIGRATION):
+        #     widest = get_widest_range(session, spawn_id)
+        #     if widest and widest > 1710:
+        #         existing.duration = 60
+        # elif new_time == existing.despawn_time:
+        #     return
+
+        if new_time == existing.despawn_time:
             return
 
         existing.despawn_time = new_time
@@ -446,10 +449,12 @@ def add_spawnpoint(session, pokemon):
         altitude = spawns.get_altitude(point)
         widest = get_widest_range(session, spawn_id)
 
-        if widest and widest > 1710:
-            duration = 60
-        else:
-            duration = None
+        # if widest and widest > 1710:
+        #     duration = 60
+        # else:
+        #     duration = None
+        
+        duration = None
 
         obj = Spawnpoint(
             spawn_id=spawn_id,
