@@ -437,7 +437,6 @@ def add_spawnpoint(session, pokemon):
         existing.despawn_time = new_time
     else:
         altitude = spawns.get_altitude(point)
-        widest = get_widest_range(session, spawn_id)
         duration = None
 
         obj = Spawnpoint(
