@@ -813,7 +813,7 @@ class Notifier:
 
     async def hook_post(self, w, session, payload):
         try:
-            async with session.post(w, data=payload, timeout=3, headers=HEADERS) as resp:
+            async with session.post(w, data=payload, timeout=6, headers=HEADERS) as resp:
                 resp.raise_for_status()
                 return True
         except HttpProcessingError as e:
