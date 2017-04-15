@@ -707,26 +707,33 @@ def get_widest_range(session, spawn_id):
         .scalar()
 
 
-def estimate_remaining_time(session, spawn_id, seen):
+def estimate_remaining_time(session, spawn_id, seen=None):
     first, last = get_first_last(session, spawn_id)
 
     if not first:
         return 90, 1800
 
-    if seen > last:
-        last = seen
-    elif seen < first:
-        first = seen
+    if seen:
+        if seen > last:
+            last = seen
+        elif seen < first:
+            first = seen
 
     if last - first > 1710:
-        estimates = [
-            time_until_time(x, seen)
-            for x in (first + 90, last + 90, first + 1800, last + 1800)]
-        return min(estimates), max(estimates)
+        possible = (first + 90, last + 90, first + 1800, last + 1800)
+        estimates = []
+        for possibility in possible:
+            estimates.append(utils.time_until_time(possibility, seen))
+        soonest = min(estimates)
+        latest = max(estimates)
+        return soonest, latest
 
     soonest = last + 90
     latest = first + 1800
-    return time_until_time(soonest, seen), time_until_time(latest, seen)
+    soonest = utils.time_until_time(soonest, seen)
+    latest = utils.time_until_time(latest, seen)
+
+    return soonest, latest
 
 
 def get_punch_card(session):
