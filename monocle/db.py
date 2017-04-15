@@ -566,8 +566,8 @@ def add_fort_detail_sighting(session, raw_fort_detail):
         pokemon_id=raw_fort_detail['pokemon_id'],
         pokemon_cp=raw_fort_detail['pokemon_cp'],
         last_modified=raw_fort_detail['last_modified'],
-        iv=raw_fort_detail['iv']
-        move_1=raw_fort_detail['move_1']
+        iv=raw_fort_detail['iv'],
+        move_1=raw_fort_detail['move_1'],
         move_2=raw_fort_detail['move_2']
     )
     session.add(obj)
