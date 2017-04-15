@@ -697,7 +697,7 @@ def get_first_last(session, spawn_id):
     return session.query(func.min(Mystery.first_seconds), func.max(Mystery.last_seconds)) \
         .filter(Mystery.spawn_id == spawn_id) \
         .filter(Mystery.first_seen > conf.LAST_MIGRATION) \
-        .scalar()
+        .first()
 
 
 def get_widest_range(session, spawn_id):
