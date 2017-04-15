@@ -15,7 +15,7 @@ setup(
     packages=(name,),
     include_package_data=True,
     zip_safe=False,
-    scripts=('scan.py', 'web.py', 'web-sanic.py', 'gyms.py', 'solve_captchas.py'),
+    scripts=('scan.py', 'web.py', 'web_sanic.py', 'gyms.py', 'solve_captchas.py'),
     install_requires=[
         'geopy>=1.11.0',
         'protobuf>=3.0.0',
@@ -24,7 +24,7 @@ setup(
         'gpsoauth>=0.4.0',
         'werkzeug>=0.11.15',
         'sqlalchemy>=1.1.0',
-        'aiopogo>=1.7.0',
+        'aiopogo>=1.7.2',
         'polyline>=1.3.1',
         'aiohttp==1.3.*',
         'pogeo>=0.2',
@@ -41,6 +41,6 @@ setup(
         'postgres': ['psycopg2>=2.6'],
         'images': ['pycairo>=1.10.0'],
         'socks': ['aiosocks>=0.1.7'],
-        'sanic': ['sanic>=0.3', 'asyncpg>=0.8']
+        'sanic': ['sanic>=0.4', 'asyncpg>=0.8', 'ujson>=1.35']
     }
 )
