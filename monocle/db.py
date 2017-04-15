@@ -163,7 +163,7 @@ class FortCache:
         self.unpickle()
 
     def __len__(self):
-        return len(self.store)
+        return len(self.gyms)
 
     def add(self, sighting):
         self.gyms[sighting['external_id']] = sighting['last_modified']
@@ -193,21 +193,37 @@ class FortCache:
 class FortDetailCache:
     """Simple cache for storing fort details sightings"""
     def __init__(self):
-        self.store = utils.load_pickle('forts_detail') or {}
+        self.gymdetails = {}
+        self.class_version = 2
+        self.unpickle()
+
+    def __len__(self):
+        return len(self.gymdetails)
 
     def add(self, sighting):
-        self.store[str(sighting['external_id']) + sighting['player_name']] = sighting['last_modified']
+        self.gymdetails[str(sighting['external_id']) + sighting['player_name']] = sighting['last_modified']
 
     def __contains__(self, sighting):
-        existing = self.store.get(str(sighting['last_modified']) + sighting['player_name'])
-        if not existing:
+        try:
+            return self.gymdetails.get(str(sighting['last_modified']) + sighting['player_name']) == sighting['last_modified']
+        except KeyError:
             return False
-        if existing is True:
-            return True
-        return existing == (str(sighting['last_modified']) + sighting['player_name'])
 
     def pickle(self):
-        utils.dump_pickle('forts_detail', self.store)
+        state = self.__dict__.copy()
+        state['db_hash'] = spawns.db_hash
+        state['bounds_hash'] = hash(bounds)
+        dump_pickle('forts_detail', state)
+
+    def unpickle(self):
+        try:
+            state = load_pickle('forts_detail', raise_exception=True)
+            if all((state['class_version'] == self.class_version,
+                    state['db_hash'] == spawns.db_hash,
+                    state['bounds_hash'] == hash(bounds))):
+                self.__dict__.update(state)
+        except (FileNotFoundError, TypeError, KeyError):
+            pass
 
 SIGHTING_CACHE = SightingCache()
 MYSTERY_CACHE = MysteryCache()
