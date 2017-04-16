@@ -22,11 +22,11 @@ if conf.NOTIFY:
 if conf.CACHE_CELLS:
     from array import typecodes
     if 'Q' in typecodes:
-        from pogeo import get_cell_ids_compact as _pogeo_cell_ids
+        from aiopogo.utilities import get_cell_ids_compact as get_cell_ids
     else:
-        from pogeo import get_cell_ids as _pogeo_cell_ids
+        from pogeo import get_cell_ids
 else:
-    from pogeo import get_cell_ids as _pogeo_cell_ids
+    from pogeo import get_cell_ids
 
 
 _unit = getattr(Units, conf.SPEED_UNIT.lower())
@@ -53,18 +53,16 @@ class Worker:
 
     if conf.CACHE_CELLS:
         cells = load_pickle('cells') or {}
-
-        @classmethod
-        def get_cell_ids(cls, point):
-            rounded = round_coords(point, 4)
+        def cell_ids(self, lat, lon, radius):
+            rounded = round_coords((lat, lon), 4)
             try:
-                return cls.cells[rounded]
+                return self.cells[rounded]
             except KeyError:
-                cells = _pogeo_cell_ids(rounded)
-                cls.cells[rounded] = cells
+                cells = get_cell_ids(*rounded, radius)
+                self.cells[rounded] = cells
                 return cells
     else:
-        get_cell_ids = _pogeo_cell_ids
+        cell_ids = get_cell_ids
 
     login_semaphore = Semaphore(conf.SIMULTANEOUS_LOGINS, loop=LOOP)
     sim_semaphore = Semaphore(conf.SIMULTANEOUS_SIMULATION, loop=LOOP)
@@ -688,16 +686,17 @@ class Worker:
         self.handle.cancel()
         self.error_code = '∞' if bootstrap else '!'
 
+        latitude, longitude = point
         self.log.info('Visiting {0[0]:.4f},{0[1]:.4f}', point)
         start = time()
 
-        cell_ids = self.get_cell_ids(point)
+        cell_ids = self.cell_ids(latitude, longitude, 500)
         since_timestamp_ms = (0,) * len(cell_ids)
         request = self.api.create_request()
         request.get_map_objects(cell_id=cell_ids,
                                 since_timestamp_ms=since_timestamp_ms,
-                                latitude=point[0],
-                                longitude=point[1])
+                                latitude=latitude,
+                                longitude=longitude)
 
         diff = self.last_gmo + self.scan_delay - time()
         if diff > 0:
@@ -862,7 +861,7 @@ class Worker:
 
         if conf.MAP_WORKERS:
             self.worker_dict.update([(self.worker_no,
-                (point, start, self.speed, self.total_seen,
+                ((latitude, longitude), start, self.speed, self.total_seen,
                 self.visits, pokemon_seen))])
         self.log.info(
             'Point processed, {} Pokemon and {} forts seen!',
