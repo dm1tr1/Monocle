@@ -793,8 +793,8 @@ class Worker:
                         # Let's make the API Call
                         request = self.api.create_request()
                         request.get_gym_details(gym_id=fort['id'],
-                                                player_latitude=latitude,
-                                                player_longitude=longitude,
+                                                player_latitude=point[0],
+                                                player_longitude=point[1],
                                                 gym_latitude=fort['latitude'],
                                                 gym_longitude=fort['longitude']
                                                 )
