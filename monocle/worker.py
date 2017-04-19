@@ -6,15 +6,14 @@ from itertools import cycle
 from sys import exit
 from distutils.version import StrictVersion
 
-from aiopogo import PGoApi, json_loads, exceptions as ex
+from aiopogo import PGoApi, HashServer, json_loads, exceptions as ex
 from aiopogo.auth_ptc import AuthPtc
-from aiopogo.hash_server import HashServer
 from pogeo import get_distance
 
 from .db import SIGHTING_CACHE, MYSTERY_CACHE, FORT_CACHE
 from .utils import round_coords, load_pickle, get_device_info, get_spawn_id, get_start_coords, Units, randomize_point
 from .shared import get_logger, LOOP, SessionManager, run_threaded, ACCOUNTS
-from . import avatar, bounds, db_proc, spawns, sanitized as conf
+from . import altitudes, avatar, bounds, db_proc, spawns, sanitized as conf
 
 if conf.NOTIFY:
     from .notification import Notifier
@@ -589,24 +588,27 @@ class Worker:
             self.simulate_jitter(0.00005)
         return False
 
-    async def visit(self, point, bootstrap=False):
+    async def visit(self, point, spawn_id=None, bootstrap=False):
         """Wrapper for self.visit_point - runs it a few times before giving up
 
         Also is capable of restarting in case an error occurs.
         """
         try:
-            self.altitude = spawns.get_altitude(point, randomize=5)
+            try:
+                self.altitude = altitudes.get(point)
+            except KeyError:
+                self.altitude = await altitudes.fetch(point)
             self.location = point
             self.api.set_position(*self.location, self.altitude)
             if not self.authenticated:
                 await self.login()
-            return await self.visit_point(point, bootstrap=bootstrap)
+            return await self.visit_point(point, spawn_id, bootstrap)
         except ex.NotLoggedInException:
             self.error_code = 'NOT AUTHENTICATED'
             await sleep(1, loop=LOOP)
             if not await self.login(reauth=True):
                 await self.swap_account(reason='reauth failed')
-            return await self.visit(point, bootstrap)
+            return await self.visit(point, spawn_id, bootstrap)
         except ex.AuthException as e:
             self.log.warning('Auth error on {}: {}', self.username, e)
             self.error_code = 'NOT AUTHENTICATED'
@@ -684,7 +686,7 @@ class Worker:
             self.error_code = 'EXCEPTION'
         return False
 
-    async def visit_point(self, point, bootstrap=False):
+    async def visit_point(self, point, spawn_id, bootstrap):
         self.handle.cancel()
         self.error_code = '∞' if bootstrap else '!'
 
@@ -724,6 +726,7 @@ class Worker:
         pokemon_seen = 0
         forts_seen = 0
         points_seen = 0
+        seen_target = not spawn_id
 
         try:
             time_of_day = map_objects['time_of_day']
@@ -743,6 +746,7 @@ class Worker:
                 pokemon_seen += 1
 
                 normalized = self.normalize_pokemon(pokemon)
+                seen_target = seen_target or normalized['spawn_id'] == spawn_id
 
                 if (normalized not in SIGHTING_CACHE and
                         normalized not in MYSTERY_CACHE):
@@ -838,6 +842,12 @@ class Worker:
                         spawns.cell_points.add(p)
                 except KeyError:
                     pass
+
+        if spawn_id:
+            db_proc.add({
+                'type': 'target',
+                'seen': seen_target,
+                'spawn_id': spawn_id})
 
         if (conf.INCUBATE_EGGS and self.unused_incubators
                 and self.eggs and self.smart_throttle()):
@@ -1053,7 +1063,7 @@ class Worker:
                 'pageurl': responses.get('CHECK_CHALLENGE', {}).get('challenge_url'),
                 'json': 1
             }
-            async with session.post('http://2captcha.com/in.php', params=params, timeout=10) as resp:
+            async with session.post('http://2captcha.com/in.php', params=params) as resp:
                 response = await resp.json(loads=json_loads)
         except CancelledError:
             raise
